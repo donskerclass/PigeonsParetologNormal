@@ -3,6 +3,12 @@
 using BridgeStan
 using Pigeons
 using Random
+using DotEnv
+
+#Load location of BridgeStan from .env file: set this to your directory
+DotEnv.load!() #Loads "bridgestan_path" to environment
+bspath = ENV["bridgestan_path"]
+set_bridgestan_path!(bspath)
 
 # We will use this type to make sure our iid sampler (next section) will
 # be used only for this model

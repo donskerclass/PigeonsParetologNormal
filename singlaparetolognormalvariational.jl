@@ -9,10 +9,14 @@ using Pigeons
 using BridgeStan 
 using StatsPlots
 using MCMCChains
-plotlyjs()
+using DotEnv
 
-#Refactor this to use an .env file
-set_bridgestan_path!("/Users/dchilder/Applications/bridgestan")
+#Load location of BridgeStan from .env file: set this to your directory
+DotEnv.load!() #Loads "bridgestan_path" to environment
+bspath = ENV["bridgestan_path"]
+set_bridgestan_path!(bspath)
+
+plotlyjs()
 
 Random.seed!(123)
 
