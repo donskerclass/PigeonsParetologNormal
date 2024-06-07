@@ -1,5 +1,8 @@
-## singleparetolognormal.jl
+## singleparetolognormal_large.jl
 ## A file to simulate and then perform posterior inference on a single Pareto log normal distribution
+## A simulation with a larger data size
+## The intention is to see if this brings precise estimates, since the model is identified in theory
+## This version uses variational parallel tempering: see https://pigeons.run/dev/variational/ and references
 ## Code is copied or translated from Meager et al https://discourse.mc-stan.org/t/double-pareto-lognormal-distribution-in-stan/10097
 
 using Distributions
@@ -23,19 +26,25 @@ Random.seed!(123)
 
 # Single Pareto Lognormal in Julia (DPLN with beta = infty)
 
-n = 2000
+n = 40000
 
 E1 = rand(Exponential(1.0),n)
 Z = rand(Normal(0.0,1.0),n)
 
 α = 1.0 # for the right tail skewed laplace
 ν = 1.0 # location for the normal
-τ = 4.0 # scale for the normal
+τ = 2.0 # scale for the normal
 
 Y = ν .+ τ*Z .+ E1/α  # this is a normal-half-laplace
 # the exponential of Y is pareto-lognormal but let's work with the log
 histogram(Y)
-title!("Normal-Half Laplace distribution, 2000 samples")
+title!("Normal-Half Laplace distribution, 40000 samples")
+
+# eY = exp.(Y)
+# histogram(eY)
+# title!("Single-Pareto-log Normal distribution, 40000 samples")
+
+
 
 #Import Stan file by BridgeStan following Pigeons tutorial
 
@@ -56,20 +65,20 @@ function stan_pln(N=n,y=Y)
 end
 
 #Sample with parallel tempering with 10 chains
-pt = pigeons(target = stan_pln(n, Y), 
-    n_chains = 10,
-    reference = stan_pln(0, 0),
+@time pt = pigeons(target = stan_pln(n, Y), 
+    variational = GaussianReference(first_tuning_round = 5),
+    n_chains_variational = 10,
     record = [traces])
 
 samples = Chains(pt)
 my_plot = StatsPlots.plot(samples)
-StatsPlots.savefig(my_plot, "Outputs/stan_posterior_densities_and_traces.html");
+StatsPlots.savefig(my_plot, "Outputs/stan_posterior_densities_and_traces_variational_large.html");
 
 #Save Chains for later use
 using HDF5
 using MCMCChainsStorage
 
-h5open("Chains/stanparetolognormalchain.h5", "w") do f
+h5open("Chains/stanparetolognormalchain_variational_large.h5", "w") do f
   write(f, samples)
 end
 
@@ -78,11 +87,12 @@ samples
 ## Additional plots
 
 cornerplot = corner(samples)
-savefig(cornerplot,"Outputs/paretolognormalpairsplot.html")
+savefig(cornerplot,"Outputs/paretolognormalpairsplot_variational_large.html")
 
-#Local barrier is a diagnostic for parallel tempering: spikes indicate locations of difficult transition
-localbarrierplot = plot(pt.shared.tempering.communication_barriers.localbarrier)
-savefig(localbarrierplot,"Outputs/paretolognormallocalbarrierplot.html")
+##Local barrier is a diagnostic for parallel tempering: spikes indicate locations of difficult transition
+## Removed since not available for variational PT, apparently 
+#localbarrierplot = plot(pt.shared.tempering.communication_barriers.localbarrier)
+#savefig(localbarrierplot,"paretolognormallocalbarrierplot_variational_large.html")
 
 
 

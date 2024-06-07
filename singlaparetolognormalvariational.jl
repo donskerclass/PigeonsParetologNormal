@@ -36,7 +36,7 @@ Z = rand(Normal(0.0,1.0),n)
 Y = ν .+ τ*Z .+ E1/α  # this is a normal-half-laplace
 # the exponential of Y is pareto-lognormal but let's work with the log
 histogram(Y)
-title!("Half-Normal-Laplace distribution, 2000 samples")
+title!("Normal-Half Laplace distribution, 2000 samples")
 
 #Import Stan file by BridgeStan following Pigeons tutorial
 

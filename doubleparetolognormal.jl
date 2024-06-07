@@ -39,7 +39,7 @@ Z = rand(Normal(0.0,1.0),n)
 Y = ν .+ τ*Z .+ E1/α .- E2/β  # this is a normal-half-laplace
 # the exponential of Y is double pareto-lognormal but let's work with the log
 datahist = histogram(Y)
-title!("Normal-Laplace distribution, 2000 samples")
+title!("Normal-Asymmetric Laplace distribution, 2000 samples")
 
 savefig(datahist, "Outputs/normal_laplace_histogram.html");
 
